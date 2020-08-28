@@ -2,12 +2,13 @@ import React from 'react';
 import 'semantic-ui-css/semantic.min.css';
 import { Input, Form, Message, InputOnChangeData } from 'semantic-ui-react';
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
+import { RouteComponentProps } from 'react-router-dom';
+import { StaticContext } from 'react-router';
 
-type Props = {
-    location: Location;
-    state: Data;
+type RouteState = {
+    token: string;
+    key: string;
 }
-
 type State = {
     text: string;
     message: string;
@@ -15,27 +16,23 @@ type State = {
     helpVisible: boolean;
 }
 
-type Data = {
-    token: string;
-    key: string;
-}
 
-class Chat extends React.Component<Props, State> {
+class Chat extends React.Component<RouteComponentProps<{}, StaticContext, RouteState>, State> {
     socket: W3CWebSocket;
-    constructor(props: Props) {
+    constructor(props: RouteComponentProps<{}, StaticContext, RouteState>) {
         super(props)
         this.state = {
             text: '', message: '', enable: false, helpVisible: true
         };
         var host = (window.location.protocol === "https:" ? "wws://" : "ws://")
             + window.location.host + "/ws"
-        this.socket = new W3CWebSocket(host, this.props.state.token);
+        this.socket = new W3CWebSocket(host, this.props.location.state.token);
     }
     componentWillMount() {
         this.socket.onopen = () => {
             this.setState({ text: 'Websocket connected' });
             this.setState({ enable: true })
-            this.socket.send(this.props.state.key)
+            this.socket.send(this.props.location.state.key)
         }
         this.socket.onmessage = (message) => {
             if (this.state.text.length === 0) {
@@ -87,14 +84,16 @@ class Chat extends React.Component<Props, State> {
                 top: 0,
                 right: 0,
                 bottom: 0,
-                left: 0
+                left: 0,
+                overflow: "auto"
             }}>
 
                 <div style={{
                     backgroundColor: "#f7f7f7",
                     padding: 10,
                     width: "100%",
-                    height: "100%"
+                    height: "100%",
+                    overflow: "auto"
                 }}>
                     {this.state.helpVisible &&
                         <Message onDismiss={this.handleDismiss}>
@@ -108,7 +107,7 @@ class Chat extends React.Component<Props, State> {
                         <Message.Header>Disconnected with Server</Message.Header>
                         if you want to reconnect go <a href="/">here</a>
                     </Message>
-                    <label>You are {this.props.state.key}</label>
+                    <label>You are {this.props.location.state.key}</label>
                     <p style={{
                         wordBreak: "break-all",
                         wordWrap: "break-word",

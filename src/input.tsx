@@ -2,7 +2,6 @@ import React from 'react';
 import 'semantic-ui-css/semantic.min.css';
 import { Grid, Form, Button, Message, InputOnChangeData, DropdownProps } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import DataContext from './context';
 
 type State = {
     key: string;
@@ -16,7 +15,7 @@ type State = {
 class Input extends React.Component<{}, State> {
     isActive: Boolean;
     options: Array<Object>;
-    constructor(props: Object) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             key: '', role: '', token: '', value: '', error: false
@@ -45,7 +44,7 @@ class Input extends React.Component<{}, State> {
         return fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer' + token
+                'Authorization': 'Bearer ' + token
             }
         })
             .then(response => response.text())
@@ -109,16 +108,17 @@ class Input extends React.Component<{}, State> {
                         {this.state.token !== 'not working' && this.state.token &&
                             <div>
                                 <div style={
-                                    { width: 180, wordBreak: "break-all", wordWrap: "break-word", }}>
+                                    { marginBottom: 10, marginRight: 10, width: 150, wordBreak: "break-all", wordWrap: "break-word", }}>
                                     {this.state.token}</div>
-                                <Button name="apiButton" onClick={this.onApiButtonClicked}>
-                                    Get Hello
-                        </Button>
-                                <Button name="chatButton">
-                                    <Link to={{
-                                        pathname: "/chat",
-                                    }}>Go Chat</Link>
-                                </Button>
+                                <div style={{ marginBottom: 10, marginTop: 10 }}>
+                                    <Button name="apiButton" onClick={this.onApiButtonClicked}>
+                                        Get Hello
+                                    </Button>
+                                </div>
+                                <Link to={{
+                                    pathname: "/chat",
+                                    state: { token: this.state.token, key: this.state.key }
+                                }}><Button name="chatButton">Go Chat</Button></Link>
                                 <h1 id='api'>{this.state.value}</h1>
                             </div>
                         }
