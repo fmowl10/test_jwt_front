@@ -1,25 +1,27 @@
-import React from 'react';
+import React, {
+  FC,
+} from 'react';
 import ReactDOM from 'react-dom';
-import * as serviceWorker from './serviceWorker';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import Input from './input';
-import Chat from './chat';
+import {
+  BrowserRouter,
+  Switch,
+  Route,
+} from 'react-router-dom';
+import Input from "src/input";
+import Chat from "src/chat";
+import 'semantic-ui-css/semantic.min.css';
 
-
-function Index() {
+const Index: FC = () => {
   return (
-    <Router>
+    <BrowserRouter>
       <Switch>
         <Route exact path="/" component={Input} />
-        <Route path="/chat" component={Chat} />
+        <Route exact path="/chat" component={Chat} />
       </Switch>
-    </Router>
+    </BrowserRouter>
   );
-}
+};
+const element = (<Index />);
+const container = document.getElementById("root");
 
-ReactDOM.render(<Index />, document.getElementById("root"));
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+ReactDOM.render(element, container);
