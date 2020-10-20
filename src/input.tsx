@@ -1,7 +1,9 @@
 import React, {
   ChangeEvent,
-  Component,
+  FC,
   FormEvent,
+  useCallback,
+  useState,
 } from 'react';
 import {
   Link,
@@ -16,146 +18,120 @@ import {
   DropdownItemProps,
 } from 'semantic-ui-react';
 
-type State = {
-  key: string;
-  role: string;
-  token: string;
-  value: string;
-  error: boolean;
-  isActive: boolean;
-  options: DropdownItemProps[];
-}
-class Input extends Component<{}, State> {
+const Input: FC = () => {
+  const [error, setError] = useState(false);
+  const [token, setToken] = useState<string | undefined>(undefined);
+  const [key, setKey] = useState("");
+  const [role, setRole] = useState("");
+  const [value, setValue] = useState("");
+  const [options] = useState<DropdownItemProps[]>([
+    { key: 'local', value: 'local', text: 'local' },
+    { key: 'host', value: 'host', text: 'host' },
+  ]);
 
-  state = {
-    key: '',
-    role: '',
-    token: '',
-    value: '',
-    error: false,
-    isActive: true,
-    options: [
-      { key: 'local', value: 'local', text: 'local' },
-      { key: 'host', value: 'host', text: 'host' },
-    ],
-  };
+  const handleDropDownChange = useCallback((e: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps) => {
+    setRole(data.value as string);
+    console.log(typeof data.value);
+  }, []);
 
-  postInput = async (url: string, data: Object) => {
+  const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (key.length <= 0 || role.length <= 0) {
+      setError(true);
+      return;
+    }
     const requestOption: RequestInit = {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ key, role }),
     };
-    const response = await fetch(url, requestOption);
+    const response = await fetch("/jwt", requestOption);
     if (response.ok) {
-      return await response.json();
+      const data = await response.json();
+      setToken(data.token);
+      setError(false);
     } else {
       const text = await response.text();
       console.log(text);
       return "not working";
     }
-  };
+  }, [key, role]);
 
-  getData = async (url: string, token: string) => {
-    const request = {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    }
-    const response = await fetch(url, request);
-    if (response.ok) {
-      return await response.json();
-    } else {
-      console.log("you Fucked up");
-      return "";
-    }
-  }
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
+    setKey(data.value);
+  }, []);
 
-  handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const {
-      key,
-      role,
-    } = this.state;
-    if (key.length <= 0 || role.length <= 0) {
-      this.setState({ error: true });
-      return;
-    }
-    const data = await this.postInput('/jwt', { key, role });
-    this.setState({ token: data.token, error: false });
-  };
-
-  handleInputChange = (e: ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
-    this.setState({ key: data.value });
-  };
-
-  handleDropDownChange = (e: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps) => {
-    this.setState({ role: data.value as string });
-    console.log(typeof data.value);
-  }
-
-  onApiButtonClicked = async () => {
+  const onApiButtonClicked = useCallback(async () => {
     try {
-      const data = await this.getData("/api", this.state.token)
-      this.setState({ value: data });
+      if (token == null) {
+        return;
+      }
+      const request = {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      }
+      const response = await fetch("/api", request);
+      if (response.ok) {
+        const data = await response.json();
+        setValue(data);
+      } else {
+        console.log("you Fucked up");
+        return "";
+      }
     } catch (e) {
-      this.setState({ value: '' });
+      setValue("");
     }
-  }
+  }, [token]);
 
-  render() {
-    return (
-      <div style={
-        { width: 400, border: "5px solid black", borderRadius: 20, padding: 10 }}>
-        <Grid columns={2}>
-          <Grid.Column>
-            <Form onSubmit={this.handleSubmit} error={this.state.error}>
-              {this.state.error && <Message error header="input both thing" />}
-              <Form.Field>
-                <label>Key</label>
-                <Form.Input
-                  name="key"
-                  onChange={this.handleInputChange}
-                  placeholder='input key'
-                />
-                <Form.Dropdown
-                  name="role"
-                  onChange={this.handleDropDownChange}
-                  placeholder="pick a role"
-                  options={this.state.options}
-                  selection
-                  clearable
-                />
-              </Form.Field>
-              <Form.Button content='Submit' />
-            </Form>
-          </Grid.Column>
-          <Grid.Column>
-            {this.state.token !== 'not working' && this.state.token &&
-              <div>
-                <div style={
-                  { marginBottom: 10, marginRight: 10, width: 150, wordBreak: "break-all", wordWrap: "break-word", }}>
-                  {this.state.token}</div>
-                <div style={{ marginBottom: 10, marginTop: 10 }}>
-                  <Button name="apiButton" onClick={this.onApiButtonClicked}>
-                    Get Hello
-                                    </Button>
-                </div>
-                <Link to={{
-                  pathname: "/chat",
-                  state: { token: this.state.token, key: this.state.key }
-                }}><Button name="chatButton">Go Chat</Button></Link>
-                <h1 id='api'>{this.state.value}</h1>
+  return (
+    <div style={
+      { width: 400, border: "5px solid black", borderRadius: 20, padding: 10 }}>
+      <Grid columns={2}>
+        <Grid.Column>
+          <Form onSubmit={handleSubmit} error={error}>
+            {error && <Message error header="input both thing" />}
+            <Form.Field>
+              <label>Key</label>
+              <Form.Input
+                name="key"
+                onChange={handleInputChange}
+                placeholder='input key'
+              />
+              <Form.Dropdown
+                name="role"
+                onChange={handleDropDownChange}
+                placeholder="pick a role"
+                options={options}
+                selection
+                clearable
+              />
+            </Form.Field>
+            <Form.Button content='Submit' />
+          </Form>
+        </Grid.Column>
+        <Grid.Column>
+          {token !== 'not working' && token &&
+            <div>
+              <div style={{ marginBottom: 10, marginRight: 10, width: 150, wordBreak: "break-all", wordWrap: "break-word", }}>
+                {token}
               </div>
-            }
-          </Grid.Column>
-        </Grid>
-      </div>
-    );
-  }
-}
+              <div style={{ marginBottom: 10, marginTop: 10 }}>
+                <Button name="apiButton" onClick={onApiButtonClicked}>Get Hello</Button>
+              </div>
+              <Link to={{ pathname: "/chat", state: { token: token, key: key } }}>
+                <Button name="chatButton">Go Chat</Button>
+              </Link>
+              <h1 id='api'>{value}</h1>
+            </div>
+          }
+        </Grid.Column>
+      </Grid>
+    </div>
+  );
+};
 
 export default Input;

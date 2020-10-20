@@ -1,8 +1,19 @@
-import React, { Component } from 'react';
-import { Input, Form, Message, InputOnChangeData } from 'semantic-ui-react';
-import { w3cwebsocket as W3CWebSocket } from 'websocket';
-import { RouteComponentProps } from 'react-router-dom';
-import { StaticContext } from 'react-router';
+import React, {
+  Component,
+} from 'react';
+import {
+  RouteComponentProps,
+} from 'react-router-dom';
+import {
+  StaticContext,
+} from 'react-router';
+import {
+  Input,
+  Form, Message, InputOnChangeData
+} from 'semantic-ui-react';
+import {
+  w3cwebsocket as W3CWebSocket,
+} from 'websocket';
 
 type RouteState = {
   token: string;
@@ -14,8 +25,6 @@ type State = {
   enable: boolean;
   helpVisible: boolean;
 }
-
-
 class Chat extends Component<RouteComponentProps<{}, StaticContext, RouteState>, State> {
 
   state = {
@@ -33,8 +42,10 @@ class Chat extends Component<RouteComponentProps<{}, StaticContext, RouteState>,
     this.socket = new W3CWebSocket(host, this.props.location.state.token);
 
     this.socket.onopen = () => {
-      this.setState({ text: 'Websocket connected' });
-      this.setState({ enable: true })
+      this.setState({
+        text: 'Websocket connected',
+        enable: true,
+      });
       this.socket?.send(this.props.location.state.key)
     }
     this.socket.onmessage = (message) => {
@@ -45,12 +56,15 @@ class Chat extends Component<RouteComponentProps<{}, StaticContext, RouteState>,
       }
     }
     this.socket.onclose = () => {
-      this.setState({ enable: false, text: this.state.text + "\ndisconneted" })
+      this.setState({
+        enable: false,
+        text: `${this.state.text}\ndisconneted`,
+      });
     }
   }
 
   handleDismiss = () => {
-    this.setState({ helpVisible: !this.state.helpVisible })
+    this.setState({ helpVisible: !this.state.helpVisible });
   }
 
   handleSubmit = () => {
