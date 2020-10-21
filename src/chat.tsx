@@ -9,7 +9,9 @@ import {
 } from 'react-router';
 import {
   Input,
-  Form, Message, InputOnChangeData
+  Form,
+  Message,
+  InputOnChangeData,
 } from 'semantic-ui-react';
 import {
   w3cwebsocket as W3CWebSocket,

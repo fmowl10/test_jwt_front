@@ -71,12 +71,12 @@ const Input: FC = () => {
       const request = {
         method: 'GET',
         headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      }
+          'Authorization': `Bearer ${token}`,
+        },
+      };
       const response = await fetch("/api", request);
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.text();
         setValue(data);
       } else {
         console.log("you Fucked up");
