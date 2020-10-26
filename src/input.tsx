@@ -3,6 +3,7 @@ import React, {
   FC,
   FormEvent,
   useCallback,
+  useContext,
   useState,
 } from 'react';
 import {
@@ -17,17 +18,23 @@ import {
   DropdownProps,
   DropdownItemProps,
 } from 'semantic-ui-react';
+import { CoreContext } from './module';
 
 const Input: FC = () => {
   const [error, setError] = useState(false);
-  const [token, setToken] = useState<string | undefined>(undefined);
-  const [key, setKey] = useState("");
   const [role, setRole] = useState("");
   const [value, setValue] = useState("");
   const [options] = useState<DropdownItemProps[]>([
     { key: 'local', value: 'local', text: 'local' },
     { key: 'host', value: 'host', text: 'host' },
   ]);
+
+  const {
+    key,
+    token,
+    setKey,
+    setToken,
+  } = useContext(CoreContext);
 
   const handleDropDownChange = useCallback((e: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps) => {
     setRole(data.value as string);
@@ -57,11 +64,11 @@ const Input: FC = () => {
       console.log(text);
       return "not working";
     }
-  }, [key, role]);
+  }, [key, role, setToken]);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
     setKey(data.value);
-  }, []);
+  }, [setKey]);
 
   const onApiButtonClicked = useCallback(async () => {
     try {
